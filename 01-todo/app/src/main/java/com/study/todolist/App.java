@@ -3,12 +3,76 @@
  */
 package com.study.todolist;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
+    public static void startServer() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+
+        server.createContext("/", new RootHandler());
+        server.createContext("/tasks", new TaskListHandler());
+
+        server.setExecutor(null);
+        server.start();
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    public static void main(String[] args) throws IOException {
+        startServer();
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    static class Task {
+        private Long id;
+        private String title;
+        private boolean completed;
+        private String date;
+    }
+
+    static class RootHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            exchange.sendResponseHeaders(200, 0);
+
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write("Hello, world!".getBytes());
+            outputStream.close();
+        }
+    }
+
+    static class TaskListHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            exchange.sendResponseHeaders(200, 0);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            List<Task> tasks = new ArrayList<>();
+            Task task = new Task(
+                    Integer.toUnsignedLong(1),
+                    "밥 먹기",
+                    false,
+                    "2021/09/04"
+            );
+            tasks.add(task);
+
+            OutputStream outputStream = exchange.getResponseBody();
+
+            objectMapper.writeValue(outputStream, tasks);
+            outputStream.close();
+        }
     }
 }
