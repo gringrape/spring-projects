@@ -7,17 +7,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 
 public class App {
+    static private List<TaskDto> taskDataList = List.of(
+            TaskDto.builder()
+                    .id(Integer.toUnsignedLong(1))
+                    .title("밥 먹기")
+                    .date("2021/09/04")
+                    .build()
+    );
+    ;
+
     public static void startServer() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
@@ -32,16 +37,6 @@ public class App {
         startServer();
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    static class Task {
-        private Long id;
-        private String title;
-        private boolean completed;
-        private String date;
-    }
-
     static class RootHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -54,24 +49,49 @@ public class App {
     }
 
     static class TaskListHandler implements HttpHandler {
+        private Object getDataOn(String path) {
+            if (path.matches("^/tasks/[0-9]+$")) {
+                String[] parts = path.split("/");
+                String id = parts[parts.length - 1];
+
+                // TODO: 할일 데이터에서 아이디에 맞는 자료를 찾고 DTO 로 매핑하여 반환
+                if (id.equals("1")) {
+                    return TaskDto.builder()
+                            .id(Integer.toUnsignedLong(1))
+                            .title("밥 먹기")
+                            .date("2021/09/04")
+                            .build();
+                }
+
+                if (id.equals("2")) {
+                    return TaskDto.builder()
+                            .id(Integer.toUnsignedLong(2))
+                            .title("밥 먹기")
+                            .date("2021/09/04")
+                            .build();
+                }
+            }
+
+            return taskDataList;
+        }
+
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            String path = exchange.getRequestURI().getPath();
+
+            Object data = getDataOn(path);
+
+            send(exchange, data);
+        }
+
+        private void send(HttpExchange exchange, Object data) throws IOException {
             exchange.sendResponseHeaders(200, 0);
 
             ObjectMapper objectMapper = new ObjectMapper();
 
-            List<Task> tasks = new ArrayList<>();
-            Task task = new Task(
-                    Integer.toUnsignedLong(1),
-                    "밥 먹기",
-                    false,
-                    "2021/09/04"
-            );
-            tasks.add(task);
-
             OutputStream outputStream = exchange.getResponseBody();
 
-            objectMapper.writeValue(outputStream, tasks);
+            objectMapper.writeValue(outputStream, data);
             outputStream.close();
         }
     }
