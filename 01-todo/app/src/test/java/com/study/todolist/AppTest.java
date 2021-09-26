@@ -3,80 +3,78 @@
  */
 package com.study.todolist;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // TODO: 테스트 로직 중복 제거
 class AppTest {
+
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private TaskDto task1 = TaskDto.builder()
+            .id(1L)
+            .title("밥 먹기")
+            .date("2021/09/04")
+            .build();
+
+    private TaskDto task2 = TaskDto.builder()
+            .id(2L)
+            .title("밥 먹기")
+            .date("2021/09/04")
+            .build();
+
+    private List<TaskDto> tasks = List.of(task1, task2);
+
     @BeforeAll
     static void setUp() throws IOException {
         App.startServer();
     }
 
+    @BeforeEach
+    void initializeClient() {
+        mockMvc = new MockMvc();
+    }
+
     @Test
     void testHelloWorld() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/"))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = mockMvc.get("http://localhost:8080/");
         assertEquals(response.statusCode(), 200);
         assertEquals(response.body(), "Hello, world!");
     }
 
     @Test
     void testGetTodos() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks"))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = mockMvc.get("http://localhost:8080/tasks");
         assertEquals(response.statusCode(), 200);
         assertEquals(
-                response.body(),
-                "[" +
-                        "{\"id\":1,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}" +
-                        "{\"id\":2,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}" +
-                        "]"
+                objectMapper.writeValueAsString(tasks),
+                response.body()
         );
     }
 
     @Test
     void testGetTodo() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/1"))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = mockMvc.get("http://localhost:8080/tasks/1");
         assertEquals(response.statusCode(), 200);
         assertEquals(
-                response.body(),
-                "{\"id\":1,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}"
+                objectMapper.writeValueAsString(task1),
+                response.body()
         );
 
-        HttpRequest request2 = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/tasks/2"))
-                .build();
-
-        HttpResponse<String> response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response2 = mockMvc.get("http://localhost:8080/tasks/2");
         assertEquals(response2.statusCode(), 200);
         assertEquals(
-                response2.body(),
-                "{\"id\":2,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}"
+                objectMapper.writeValueAsString(task2),
+                response2.body()
         );
     }
 }

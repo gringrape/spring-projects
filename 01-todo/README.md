@@ -58,3 +58,13 @@
 - [x] handler - send 추출 => 데이터를 보내주는 low 기술 메서드
 - [x] handler - getResponseDataOn 추출 => 경로에 따른 응답데이터 반환 메서드
 - [ ] {id} 를 받았을때, '할 일 목록' 에서 해당 id 찾아서 주기
+
+### Checklist - 2021.09.26
+
+- [x] {id} 를 받았을때, '할 일 목록' 에서 해당 id 찾아서 주기
+- [x] 테스트 중복 로직 제거
+  - [x] client 를 만들고 request 를 보내는 코드 중복 제거
+  - [x] list fixture 를 JSON 객체로
+  - [x] MockMvc 클래스 파일 생성
+- [ ] POST /tasks -> 201, {}
+- [ ] json 변환 작업을 object.toJSON 형식으로 추상화
