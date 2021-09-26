@@ -14,6 +14,7 @@ import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+// TODO: 테스트 로직 중복 제거
 class AppTest {
     @BeforeAll
     static void setUp() throws IOException {
@@ -45,7 +46,37 @@ class AppTest {
         assertEquals(response.statusCode(), 200);
         assertEquals(
                 response.body(),
-                "[{\"id\":1,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}]"
+                "[" +
+                        "{\"id\":1,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}" +
+                        "{\"id\":2,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}" +
+                        "]"
+        );
+    }
+
+    @Test
+    void testGetTodo() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/tasks/1"))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(response.statusCode(), 200);
+        assertEquals(
+                response.body(),
+                "{\"id\":1,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}"
+        );
+
+        HttpRequest request2 = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/tasks/2"))
+                .build();
+
+        HttpResponse<String> response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
+        assertEquals(response2.statusCode(), 200);
+        assertEquals(
+                response2.body(),
+                "{\"id\":2,\"title\":\"밥 먹기\",\"completed\":false,\"date\":\"2021/09/04\"}"
         );
     }
 }
