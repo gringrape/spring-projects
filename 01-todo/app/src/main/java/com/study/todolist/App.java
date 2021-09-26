@@ -19,9 +19,13 @@ public class App {
                     .id(Integer.toUnsignedLong(1))
                     .title("밥 먹기")
                     .date("2021/09/04")
+                    .build(),
+            TaskDto.builder()
+                    .id(Integer.toUnsignedLong(2))
+                    .title("밥 먹기")
+                    .date("2021/09/04")
                     .build()
     );
-    ;
 
     public static void startServer() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -54,22 +58,8 @@ public class App {
                 String[] parts = path.split("/");
                 String id = parts[parts.length - 1];
 
-                // TODO: 할일 데이터에서 아이디에 맞는 자료를 찾고 DTO 로 매핑하여 반환
-                if (id.equals("1")) {
-                    return TaskDto.builder()
-                            .id(Integer.toUnsignedLong(1))
-                            .title("밥 먹기")
-                            .date("2021/09/04")
-                            .build();
-                }
-
-                if (id.equals("2")) {
-                    return TaskDto.builder()
-                            .id(Integer.toUnsignedLong(2))
-                            .title("밥 먹기")
-                            .date("2021/09/04")
-                            .build();
-                }
+                // TODO: 데이터에서 해당하는 id 를 '찾아서' 돌려주도록 구현 변경
+                return taskDataList.get(Integer.parseInt(id) - 1);
             }
 
             return taskDataList;
